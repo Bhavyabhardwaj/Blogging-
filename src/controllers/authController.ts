@@ -28,6 +28,25 @@ export const signup = async (req: Request, res: Response) => {
         const token = generateToken(user.id)
         return res.status(200).json({ user, token })
     } catch (error) {
-        console.log("Error in signing up user")
+        console.log("Error in sing up user")
+    }
+}
+
+export const signin = async (req: Request, res: Response) => {
+    const { email, password } = req.body;
+    try {
+        const user = await prisma.user.findUnique({ where: { email } })
+        if(!user) {
+            return res.status(404).json({ error: "User not found" })
+        }
+
+        const isPasswordCorrect = await bcrypt.compare(password, user.password)
+        if(!isPasswordCorrect) {
+            return res.status(400).json({ error: "Invalid credentials" })
+        }
+        const token = generateToken(user.id)
+        res.status(200).json({ user, token })
+    } catch (error) {
+        console.log("error in signing in the user")
     }
 }
